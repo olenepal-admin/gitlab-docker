@@ -1,0 +1,52 @@
+version: '2'
+services:
+  web:
+    build:
+      context: ./dockerfile-gitlab
+    restart: always
+    container_name:  "gitlab"
+    hostname: 'git.olenepal.org'
+    environment:
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url 'https://git.olenepal.org'
+        gitlab_rails['time_zone'] = 'Asia/Kathmandu'
+        gitlab_rails['smtp_enable'] = true
+        gitlab_rails['smtp_address'] = "smtp.gmail.com"
+        gitlab_rails['smtp_port'] = 587
+        gitlab_rails['smtp_user_name'] = "mail.tony.server@gmail.com"
+        gitlab_rails['smtp_password'] = "olenepal2017"
+        gitlab_rails['smtp_domain'] = "smtp.gmail.com"
+        gitlab_rails['smtp_authentication'] = "login"
+        gitlab_rails['smtp_enable_starttls_auto'] = true
+        gitlab_rails['smtp_tls'] = false
+        gitlab_rails['lfs_enabled'] = true
+  
+    ports:
+      - '8282:80'
+      - '443:443'
+      - '2222:22'
+    volumes:
+            - '/mnt/gitl/gitlab/config:/etc/gitlab:rw'
+            - '/mnt/gitl/gitlab/logs:/var/log/gitlab:rw'
+            - '/mnt/gitl/gitlab/data:/var/opt/gitlab:rw'
+            - '/mnt/gitl/gitlab/logs/reconfigure:/var/log/gitlab/reconfigure'
+            - '/mnt/gitl/gitlab-data/EPaath28:/deploy/EPaath28:rw'
+
+    networks:
+      - gitlab-network
+
+  httpd-epaath:
+    build:
+      context: ./dockerfile-apache
+    ports:
+    container_name: "epaath-httpd"
+    ports:
+      - "5656:80"
+    volumes:
+      - "/mnt/gitl/gitlab-data/EPaath28:/usr/local/apache2/htdocs"
+    networks:
+      - gitlab-network
+networks:
+ gitlab-network:
+    driver: bridge
+
